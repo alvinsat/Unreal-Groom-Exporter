@@ -1,0 +1,14 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/experimental:deterministic
+/DEF
+/NAME:"UnrealEditor-UE58GroomExporter.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"D:/Vicky/BurningTree/WS/Character/FemaleCharacter01/Intermediate/Build/Win64/x64/FemaleCharacter01Editor/Development/UnrealEd/SharedPCH.UnrealEd.Project.ValApi.ValExpApi.Cpp20.InclOrderUnreal5_6.h.obj"
+"D:/Vicky/BurningTree/WS/Character/FemaleCharacter01/Plugins/UE58GroomExporter/Intermediate/Build/Win64/x64/UnrealEditor/Development/UE58GroomExporter/Module.UE58GroomExporter.cpp.obj"
+"D:/Vicky/BurningTree/WS/Character/FemaleCharacter01/Plugins/UE58GroomExporter/Intermediate/Build/Win64/x64/UnrealEditor/Development/UE58GroomExporter/GroomExporterLibrary.cpp.obj"
+"D:/Vicky/BurningTree/WS/Character/FemaleCharacter01/Plugins/UE58GroomExporter/Intermediate/Build/Win64/x64/UnrealEditor/Development/UE58GroomExporter/UE58GroomExporter.cpp.obj"
+/OUT:"D:/Vicky/BurningTree/WS/Character/FemaleCharacter01/Plugins/UE58GroomExporter/Intermediate/Build/Win64/x64/UnrealEditor/Development/UE58GroomExporter/UnrealEditor-UE58GroomExporter.lib"

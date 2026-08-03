@@ -1,0 +1,27 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "UE58GroomExporter",
+	"Description": "",
+	"Category": "Other",
+	"CanContainContent": false,
+	"Modules": [
+		{
+			"Name": "UE58GroomExporter",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	],
+
+	"Plugins": [
+		{
+			"Name": "HairStrands",
+			"Enabled": true
+		},
+		{
+			"Name": "AlembicImporter",
+			"Enabled": true
+		}
+	]
+}

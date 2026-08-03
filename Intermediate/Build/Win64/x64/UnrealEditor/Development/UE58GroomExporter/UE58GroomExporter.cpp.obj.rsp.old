@@ -1,0 +1,14 @@
+"D:/Vicky/BurningTree/WS/Character/FemaleCharacter01/Plugins/UE58GroomExporter/Source/UE58GroomExporter/Private/UE58GroomExporter.cpp"
+@"D:/Vicky/BurningTree/WS/Character/FemaleCharacter01/Plugins/UE58GroomExporter/Intermediate/Build/Win64/x64/UnrealEditor/Development/UE58GroomExporter/UE58GroomExporter.Shared.rsp"
+/FI"D:/Vicky/BurningTree/WS/Character/FemaleCharacter01/Intermediate/Build/Win64/x64/FemaleCharacter01Editor/Development/UnrealEd/SharedPCH.UnrealEd.Cpp20.h"
+/FI"D:/Vicky/BurningTree/WS/Character/FemaleCharacter01/Plugins/UE58GroomExporter/Intermediate/Build/Win64/x64/UnrealEditor/Development/UE58GroomExporter/Definitions.UE58GroomExporter.h"
+/Yu"D:/Vicky/BurningTree/WS/Character/FemaleCharacter01/Intermediate/Build/Win64/x64/FemaleCharacter01Editor/Development/UnrealEd/SharedPCH.UnrealEd.Cpp20.h"
+/Fp"D:/Vicky/BurningTree/WS/Character/FemaleCharacter01/Intermediate/Build/Win64/x64/FemaleCharacter01Editor/Development/UnrealEd/SharedPCH.UnrealEd.Cpp20.h.pch"
+/Fo"D:/Vicky/BurningTree/WS/Character/FemaleCharacter01/Plugins/UE58GroomExporter/Intermediate/Build/Win64/x64/UnrealEditor/Development/UE58GroomExporter/UE58GroomExporter.cpp.obj"
+/experimental:log "D:/Vicky/BurningTree/WS/Character/FemaleCharacter01/Plugins/UE58GroomExporter/Intermediate/Build/Win64/x64/UnrealEditor/Development/UE58GroomExporter/UE58GroomExporter.cpp.sarif"
+/sourceDependencies "D:/Vicky/BurningTree/WS/Character/FemaleCharacter01/Plugins/UE58GroomExporter/Intermediate/Build/Win64/x64/UnrealEditor/Development/UE58GroomExporter/UE58GroomExporter.cpp.dep.json"
+/nologo
+/TP
+/GR-
+/std:c++20
+/wd5054

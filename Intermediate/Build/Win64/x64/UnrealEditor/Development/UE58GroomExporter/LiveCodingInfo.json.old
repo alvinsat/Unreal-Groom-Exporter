@@ -1,0 +1,9 @@
+{
+	"RemapUnityFiles": 
+	{
+		"Module.UE58GroomExporter.cpp.obj": [
+			"PerModuleInline.gen.cpp.obj",
+			"UE58GroomExporter.cpp.obj"
+		]
+	}
+}
