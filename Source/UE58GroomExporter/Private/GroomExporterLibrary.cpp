@@ -16,6 +16,24 @@ bool UGroomExporterLibrary::ExportGroomToOBJ(
         return false;
     }
 
+    if (!Groom->CanRebuildFromDescription())
+    {
+        UE_LOG(
+            LogTemp,
+            Error,
+            TEXT("Groom asset has no source Hair Description to export."));
+        return false;
+    }
+
+    const FHairDescriptionGroups& DescriptionGroups =
+        Groom->GetHairDescriptionGroups();
+    const int32 NumGroups = DescriptionGroups.HairGroups.Num();
+    if (NumGroups == 0)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Groom asset has no hair groups to export."));
+        return false;
+    }
+
     FString OBJ;
 
     FString JSON;
@@ -25,39 +43,92 @@ bool UGroomExporterLibrary::ExportGroomToOBJ(
     bool bFirstCurve = true;
 
     int32 VertexIndex = 1;
-    int32 GlobalCurveID = 0;
-
-    const int32 NumGroups = Groom->GetNumHairGroups();
+    bool bExportColors = true;
 
     for (int32 Group = 0; Group < NumGroups; ++Group)
     {
-        FHairStrandsDatas Strands;
-        FHairStrandsDatas Guides;
-
-        if (!Groom->GetHairStrandsDatas(Group, Strands, Guides))
+        const FHairDescriptionGroup& HairGroup =
+            DescriptionGroups.HairGroups[Group];
+        if (HairGroup.Info.GroupIndex != Group)
         {
-            UE_LOG(LogTemp, Warning, TEXT("Failed to read Groom Group %d"), Group);
-            continue;
+            UE_LOG(
+                LogTemp,
+                Error,
+                TEXT("Groom source group index %d does not match array index %d."),
+                HairGroup.Info.GroupIndex,
+                Group);
+            return false;
         }
 
-        const auto& Curves = Strands.StrandsCurves;
-        const auto& Points = Strands.StrandsPoints;
+        const FHairStrandsPoints& Points =
+            HairGroup.Strands.StrandsPoints;
+        const int32 PointCount = Points.PointsPosition.Num();
+        if (Points.PointsRadius.Num() != PointCount)
+        {
+            UE_LOG(
+                LogTemp,
+                Error,
+                TEXT("Groom source group %d has %d points but %d radii; refusing to export altered widths."),
+                Group,
+                PointCount,
+                Points.PointsRadius.Num());
+            return false;
+        }
+        bExportColors &= Points.PointsBaseColor.Num() == PointCount;
+    }
+
+    if (!bExportColors)
+    {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("One or more Groom groups have no complete color data; original colors will not be exported."));
+    }
+
+    for (int32 Group = 0; Group < NumGroups; ++Group)
+    {
+        const FHairDescriptionGroup& HairGroup =
+            DescriptionGroups.HairGroups[Group];
+        const FHairStrandsCurves& Curves =
+            HairGroup.Strands.StrandsCurves;
+        const FHairStrandsPoints& Points =
+            HairGroup.Strands.StrandsPoints;
 
         const bool bHasRootUV =
             Curves.CurvesRootUV.Num() == Curves.CurvesCount.Num();
+        const bool bHasColors =
+            bExportColors
+            && Points.PointsBaseColor.Num() == Points.PointsPosition.Num();
 
         UE_LOG(
             LogTemp,
             Warning,
-            TEXT("Group %d : Curves=%d  RootUV=%s"),
+            TEXT("Group %d : Curves=%d  RootUV=%s  Radius=%s  Color=%s"),
             Group,
             Curves.CurvesCount.Num(),
-            bHasRootUV ? TEXT("YES") : TEXT("NO"));
+            bHasRootUV ? TEXT("YES") : TEXT("NO"),
+            TEXT("YES (source)"),
+            bHasColors ? TEXT("YES") : TEXT("NO"));
 
+        uint32 GroupPointOffset = 0;
         for (int32 Curve = 0; Curve < Curves.CurvesCount.Num(); ++Curve)
         {
-            const uint32 Offset = Curves.CurvesOffset[Curve];
+            const uint32 Offset = GroupPointOffset;
             const uint32 Count = Curves.CurvesCount[Curve];
+            if (static_cast<uint64>(Offset) + Count
+                > static_cast<uint64>(Points.PointsPosition.Num()))
+            {
+                UE_LOG(
+                    LogTemp,
+                    Error,
+                    TEXT("Groom source group %d curve %d has an invalid point range (offset %u, count %u, points %d)."),
+                    Group,
+                    Curve,
+                    Offset,
+                    Count,
+                    Points.PointsPosition.Num());
+                return false;
+            }
 
             //
             // JSON
@@ -77,14 +148,93 @@ bool UGroomExporterLibrary::ExportGroomToOBJ(
                 U = Curves.CurvesRootUV[Curve].X;
                 V = Curves.CurvesRootUV[Curve].Y;
             }
+            if (!FMath::IsFinite(U) || !FMath::IsFinite(V))
+            {
+                UE_LOG(
+                    LogTemp,
+                    Error,
+                    TEXT("Groom group %d curve %d has an invalid root UV."),
+                    Group,
+                    Curve);
+                return false;
+            }
 
             JSON += FString::Printf(
-                TEXT("        {\"first\":%u,\"count\":%u,\"group\":%d,\"uv\":[%.9f, %.9f]}"),
+                TEXT("        {\"first\":%u,\"count\":%u,\"group\":%d,\"uv\":[%.9g,%.9g]"),
                 Offset,
                 Count,
                 Group,
                 U,
                 V);
+            JSON += TEXT(",\"radius\":[");
+            for (uint32 Point = 0; Point < Count; ++Point)
+            {
+                const uint32 PointArrayIndex = Offset + Point;
+                const float Radius = Points.PointsRadius[PointArrayIndex];
+                if (!FMath::IsFinite(Radius) || Radius < 0.0f)
+                {
+                    const FVector3f& Position =
+                        Points.PointsPosition[PointArrayIndex];
+                    UE_LOG(
+                        LogTemp,
+                        Error,
+                        TEXT("Invalid source Groom radius: group=%d curve=%d point=%u groupPoint=%u curveOffset=%u curveCount=%u radius=%.9g width=%.9g position=(%.9g,%.9g,%.9g)."),
+                        Group,
+                        Curve,
+                        Point,
+                        PointArrayIndex,
+                        Offset,
+                        Count,
+                        Radius,
+                        Radius * 2.0f,
+                        Position.X,
+                        Position.Y,
+                        Position.Z);
+                    return false;
+                }
+                if (Point > 0)
+                {
+                    JSON += TEXT(",");
+                }
+                JSON += FString::Printf(TEXT("%.9g"), Radius);
+            }
+            JSON += TEXT("]");
+            if (bHasColors)
+            {
+                JSON += TEXT(",\"color\":[");
+                for (uint32 Point = 0; Point < Count; ++Point)
+                {
+                    const FLinearColor& Color =
+                        Points.PointsBaseColor[Offset + Point];
+                    if (!FMath::IsFinite(Color.R)
+                        || !FMath::IsFinite(Color.G)
+                        || !FMath::IsFinite(Color.B)
+                        || Color.R < 0.0f
+                        || Color.G < 0.0f
+                        || Color.B < 0.0f)
+                    {
+                        UE_LOG(
+                            LogTemp,
+                            Error,
+                            TEXT("Groom group %d curve %d has an invalid color at point %u."),
+                            Group,
+                            Curve,
+                            Point);
+                        return false;
+                    }
+                    if (Point > 0)
+                    {
+                        JSON += TEXT(",");
+                    }
+                    JSON += FString::Printf(
+                        TEXT("[%.9g,%.9g,%.9g]"),
+                        Color.R,
+                        Color.G,
+                        Color.B);
+                }
+                JSON += TEXT("]");
+            }
+            JSON += TEXT("}");
 
             //
             // OBJ vertices
@@ -114,7 +264,20 @@ bool UGroomExporterLibrary::ExportGroomToOBJ(
 
             OBJ += TEXT("\n");
 
-            ++GlobalCurveID;
+            GroupPointOffset += Count;
+        }
+
+        if (GroupPointOffset
+            != static_cast<uint32>(Points.PointsPosition.Num()))
+        {
+            UE_LOG(
+                LogTemp,
+                Error,
+                TEXT("Groom source group %d curve ranges cover %u of %d points."),
+                Group,
+                GroupPointOffset,
+                Points.PointsPosition.Num());
+            return false;
         }
     }
 

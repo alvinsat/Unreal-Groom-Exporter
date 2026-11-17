@@ -5,7 +5,7 @@ Unreal Groom Exporter is an Unreal Engine 5.8 plugin that exports native Groom A
 The plugin exports two files:
 
 - `.obj` — Hair strand vertex positions
-- `.json` — Curve metadata including strand layout and root UV coordinates
+- `.json` — Curve metadata, root UVs, per-point radii, and colors when available
 
 These files can be imported using the Unreal Groom Importer Blender Extension.
 
@@ -18,9 +18,12 @@ These files can be imported using the Unreal Groom Importer Blender Extension.
 - Exports all hair strands
 - Preserves curve topology
 - Preserves root UV coordinates
+- Preserves per-point strand radii and colors in the JSON sidecar when present in the Groom
 - Exports multiple hair groups
 - Generates accompanying JSON metadata automatically
 - Compatible with the Unreal Groom Blender Importer Extension
+- Imports Blender Alembic grooms with their JSON group manifest
+- Keeps Unreal's native `.abc` import unchanged; Blender groom import is a separate menu action
 
 ---
 
@@ -29,6 +32,7 @@ These files can be imported using the Unreal Groom Importer Blender Extension.
 - Unreal Engine 5.8
 - HairStrands plugin enabled
 - Alembic Importer plugin enabled
+- Alembic Groom Importer plugin enabled (enabled by this plugin dependency)
 
 ---
 
@@ -61,4 +65,13 @@ Hair_S_Pixie.obj
 Hair_S_Pixie.json
 ```
 
-These files can now be imported using the Blender 
+Import both files using the Unreal Groom Importer Blender extension.
+
+## Import a Blender Groom into Unreal
+
+1. Keep the `.abc` exported by the Blender extension beside its same-name `.json` manifest.
+2. In Unreal Editor, choose **File → Import/Export → Import Blender Groom (.abc + .json)**.
+3. Select the `.abc`. The plugin reads the companion manifest, validates curve order and point counts, and restores each strand's group ID and root UV plus per-point radius and color data when present.
+4. The asset is created in the current Content Browser folder (or `/Game` if no project folder is active). Save the package after import.
+
+The Blender exporter already bakes its configured scale and rotation into the Alembic geometry. This manual import action uses identity conversion to avoid applying those transforms a second time. This is an explicit plugin action; it does not replace or intercept Unreal's normal Alembic import.

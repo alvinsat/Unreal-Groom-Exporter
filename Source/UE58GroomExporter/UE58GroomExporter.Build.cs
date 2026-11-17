@@ -41,10 +41,14 @@ public class UE58GroomExporter : ModuleRules
 				"SlateCore",
 
 				// Editor
+				"UnrealEd",
+				"AssetRegistry",
+				"AssetTools",
 				"ToolMenus",
 				"ContentBrowser",
 				"ContentBrowserData",
 				"DesktopPlatform",
+				"Json",
 
 				// Hair
 				"HairStrandsCore",

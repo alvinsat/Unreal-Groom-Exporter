@@ -16,4 +16,5 @@ private:
     void RegisterMenus();
 
     void ExportSelectedGroom(const FToolMenuContext& Context);
+    void ImportBlenderGroom(const FToolMenuContext& Context);
 };
