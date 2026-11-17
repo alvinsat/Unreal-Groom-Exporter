@@ -19,6 +19,7 @@ These files can be imported using the Unreal Groom Importer Blender Extension.
 - Preserves curve topology
 - Preserves root UV coordinates
 - Preserves per-point strand radii and colors in the JSON sidecar when present in the Groom
+- Passes finite negative radii through unchanged with a warning; affected strands may render with pinched or zero-width points
 - Exports multiple hair groups
 - Generates accompanying JSON metadata automatically
 - Compatible with the Unreal Groom Blender Importer Extension

@@ -44,6 +44,7 @@ bool UGroomExporterLibrary::ExportGroomToOBJ(
 
     int32 VertexIndex = 1;
     bool bExportColors = true;
+    uint32 NegativeRadiusCount = 0;
 
     for (int32 Group = 0; Group < NumGroups; ++Group)
     {
@@ -171,7 +172,7 @@ bool UGroomExporterLibrary::ExportGroomToOBJ(
             {
                 const uint32 PointArrayIndex = Offset + Point;
                 const float Radius = Points.PointsRadius[PointArrayIndex];
-                if (!FMath::IsFinite(Radius) || Radius < 0.0f)
+                if (!FMath::IsFinite(Radius))
                 {
                     const FVector3f& Position =
                         Points.PointsPosition[PointArrayIndex];
@@ -191,6 +192,10 @@ bool UGroomExporterLibrary::ExportGroomToOBJ(
                         Position.Y,
                         Position.Z);
                     return false;
+                }
+                if (Radius < 0.0f)
+                {
+                    ++NegativeRadiusCount;
                 }
                 if (Point > 0)
                 {
@@ -297,6 +302,15 @@ bool UGroomExporterLibrary::ExportGroomToOBJ(
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to save exported files."));
         return false;
+    }
+
+    if (NegativeRadiusCount > 0)
+    {
+        UE_LOG(
+            LogTemp,
+            Warning,
+            TEXT("Exported %u negative source Groom radii unchanged; the affected strands may render with pinched or zero-width points."),
+            NegativeRadiusCount);
     }
 
     UE_LOG(LogTemp, Warning, TEXT("OBJ exported to: %s"), *Filename);
